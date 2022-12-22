@@ -1,0 +1,8 @@
+nltk
+pandas
+numpy
+tensorflow
+transformers
+sklearn
+plotly
+pickle
