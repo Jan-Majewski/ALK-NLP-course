@@ -1,8 +1,9 @@
 nltk
 pandas
 numpy
-tensorflow
+tensorflow==2.8.0
 transformers
 sklearn
 plotly
-pickle
+torch
+pyarrow
