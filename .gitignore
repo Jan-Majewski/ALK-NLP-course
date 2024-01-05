@@ -1,6 +1,5 @@
 
-*.pdf
-*.pptx
+
 
 
 # Byte-compiled / optimized / DLL files
@@ -152,3 +151,6 @@ inspirations/C1_W3_lecture_nb_03_pca.ipynb
 inspirations/C2_W4_lecture_nb_4_word_embeddings_hands_on.ipynb
 inspirations/C2_W4_lecture_nb_5_word_embeddings_step_by_step.ipynb
 W1 - Introduction/Compare_LLM_vs_Spacy.ipynb
+NLP_W2_RECOVERED.pptx
+NLP_W3_OLD.pptx
+NLP_W4_OLD.pptx
