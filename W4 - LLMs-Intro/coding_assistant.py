@@ -18,19 +18,20 @@ with open("../opeanai_key.txt", "r") as file:
     # Read the content of the file
     OPENAI_API_KEY = file.read()
 
-#pip install langchain, duckduckgo-searcj
-llm = ChatOpenAI(openai_api_key=OPENAI_API_KEY, temperature=0, model="gpt-3.5-turbo")
+#pip install langchain, duckduckgo-search
+llm = ChatOpenAI(openai_api_key=OPENAI_API_KEY, temperature=0, model="gpt-4")
+#llm = ChatOpenAI(openai_api_key=OPENAI_API_KEY, temperature=0, model="gpt-3.5-turbo")
 
 llm_math_chain = LLMMathChain.from_llm(llm=llm, verbose=True)
 
 calculator = Tool(
     name="Calculator",
     func=llm_math_chain.run,
-    description="useful for when you need to answer questions about math",
+    description="""useful for when you need to answer questions about math""",
 )
 
 
-tools = [calculator ]
+tools = [calculator]
 
 
 prompt = PromptTemplate(input_variables=['agent_scratchpad', 'chat_history', 'input', 'tool_names', 'tools'],
@@ -38,15 +39,17 @@ prompt = PromptTemplate(input_variables=['agent_scratchpad', 'chat_history', 'in
                         '\n\nTOOLS:\n------\n\nAssistant has access to the following tools:\n\n{tools}\n\nTo use a tool,'
                         'please use the following format:\n\n```\nThought: Do I need to use a tool? Yes\nAction: the action to'
                         'take, should be one of [{tool_names}]\nAction Input: the input to the action\nObservation: the result of '
-                        'the action\n```\n\nWhen you have a response to say to the Human, or if you do not need to use a tool, you MUST use'
+                        '''the action returned by the tool\n. Once you have answer from a tool return it in the following format:
+                         Final Answer: [response from the tool]\n\n'''
+                        'If you do not need to use a tool, you MUST use'
                         'the format:\n\n```\nThought: Do I need to use a tool? No\nFinal Answer: [your response here]\n```\n\nBegin!'
                         '\n\nPreviousconversation history:\n{chat_history}'
                         '\n\nNew input: {input}\n{agent_scratchpad}')
 
 
 prompt = prompt.partial(tools=render_text_description(tools), tool_names=", ".join([t.name for t in tools]))
-
-llm_with_stop = llm.bind(stop="\nObservation")
+llm_with_stop = llm.bind(stop="\nObservation:")
+llm_tools_bind = llm.bind(tools=tools)
 memory = ConversationBufferMemory(memory_key='chat_history')
 
 agent = (
@@ -56,16 +59,13 @@ agent = (
         "chat_history": lambda x: x["chat_history"]
     }
     | prompt
-    # | llm.bind(tools=tools)
     | llm_with_stop
     | ReActSingleInputOutputParser()
 )
+agent_chain = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, 
+                                                 verbose=True, memory=memory, handle_parsing_errors=True)
 
-
-
-agent_chain = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True, memory=memory)
-
-# agent_chain.invoke({"input": "What is the capital of Poland"})
-
-
-# agent_chain.invoke({"input": "What was my previous question?"})
+if __name__ == '__main__':
+    print(prompt )
+    agent_chain.invoke({"input": "What is 5+5"})
+    print(agent )
